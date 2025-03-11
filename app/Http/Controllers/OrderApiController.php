@@ -16,57 +16,61 @@ class OrderApiController extends Controller
      */
     public function store(Request $request)
     {     
-
-        // $validated = $request->validate([
-        //     'name' => 'required|string|max:255',
-        //     'phone' => 'required|string|max:20',
+        try {
+            // Fetch the product size record before using it
+            $productSize = \App\Models\ProductSize::where('product_id', $request->product_id)
+                        ->where('size_id', $request->size_id)
+                        ->first();
             
-        //     'address' => 'required|string',
-        //     'quantity' => 'required|integer|min:1',
-        //     'shipping_option' => 'required|string|in:inside,outside',
-        //     'subtotal' => 'required|numeric|min:0',
-        //     'shipping_cost' => 'required|numeric|min:0',
-        //     'total' => 'required|numeric|min:0',
-        //     'product_id' => 'required|exists:products,id',
-        //     'size_id' => 'required|exists:sizes,id',
-        // ]);
-
-        // Check if there's enough stock for the requested product and size
-        $productSize = ProductSize::where('product_id', $request->product_id)
-            ->where('size_id', $request->size_id)
-            ->first();
-
-        if (!$productSize || $productSize->quantity < $request->quantity) {
+            // Check if the product size exists
+            if (!$productSize) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'The requested product size combination does not exist.'
+                ], 400);
+            }
+            
+            // Check if there's enough stock
+            if ($productSize->quantity < $request->quantity) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Not enough stock available for the selected size.'
+                ], 400);
+            }
+            
+            // Create the order
+            $order = \App\Models\Order::create([
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'city' => $request->city,
+                'address' => $request->address,
+                'quantity' => $request->quantity,
+                'shipping_option' => $request->shipping_option,
+                'subtotal' => $request->subtotal,
+                'shipping_cost' => $request->shipping_cost,
+                'total' => $request->total,
+                'product_id' => $request->product_id,
+                'size_id' => $request->size_id,
+                'status' => 'pending'
+            ]);
+    
+            // Now update the inventory
+            $productSize->quantity -= $request->quantity;
+            $productSize->save();
+    
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Order placed successfully!',
+                'order' => $order,
+            ], 201);
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Order creation failed: ' . $e->getMessage());
+            
             return response()->json([
                 'status' => 'error',
-                'message' => 'Not enough stock available for the selected size.',
-            ], 400);
+                'message' => 'Failed to create order: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Create the order
-        $order = Order::create([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'city' => $request->city,
-            'address' => $request->address,
-            'quantity' => $request->quantity,
-            'shipping_option' => $request->shipping_option,
-            'subtotal' => $request->subtotal,
-            'shipping_cost' => $request->shipping_cost,
-            'total' => $request->total,
-            'product_id' => $request->product_id,
-            'size_id' => $request->size_id,
-            'status' => 'pending'
-        ]);
-
-        // Reduce the product inventory
-        $productSize->quantity -= $request->quantity;
-        $productSize->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Order placed successfully!',
-            'order' => $order,
-        ], 201);
     }
 }

@@ -35,6 +35,7 @@ class ProductApiController extends Controller
                     return [
                         'id' => $productSize->id,
                         'name' => $productSize->size->size,
+                        'size_id' => $productSize->size->id,
                         'quantity' => $productSize->quantity
                     ];
                 });
@@ -92,6 +93,7 @@ class ProductApiController extends Controller
                     return [
                         'id' => $productSize->id,
                         'name' => $productSize->size->size,
+                        'size_id' => $productSize->size->id,
                         'quantity' => $productSize->quantity
                     ];
                 });
