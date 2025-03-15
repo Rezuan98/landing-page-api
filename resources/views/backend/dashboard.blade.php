@@ -84,7 +84,7 @@
             </div>
             <div class="sidebar-body">
                 <ul class="nav">
-                    <li class="nav-item nav-category">Main</li>
+                    <li class="nav-item ">Main</li>
                     <li class="nav-item">
                         <a href="{{ route('admin.dashboard') }}" class="nav-link">
                             <i class="link-icon" data-feather="box"></i>
@@ -93,14 +93,14 @@
                     </li>
 
                     <!-- Order Management Section -->
-                    <li class="nav-item nav-category">Orders</li>
+                    <li class="nav-item ">Orders</li>
                     <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#orders" role="button" aria-expanded="false" aria-controls="orders">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#orderCollapse" role="button" aria-expanded="false" aria-controls="orderCollapse">
                             <i class="link-icon" data-feather="shopping-cart"></i>
                             <span class="link-title">Order Management</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="orders">
+                        <div class="collapse" id="orderCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
                                     <a href="{{ route('index.order') }}" class="nav-link">All Orders</a>
@@ -110,6 +110,9 @@
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ route('index.order') }}?status=processing" class="nav-link">Processing Orders</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('index.order') }}?status=shipped" class="nav-link">Shipped Orders</a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ route('index.order') }}?status=completed" class="nav-link">Completed Orders</a>
@@ -122,14 +125,14 @@
                     </li>
 
                     <!-- Product Data Section -->
-                    <li class="nav-item nav-category">Product Data</li>
+                    <li class="nav-item ">Product Data</li>
                     <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#sizes" role="button" aria-expanded="false" aria-controls="sizes">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#sizeCollapse" role="button" aria-expanded="false" aria-controls="sizeCollapse">
                             <i class="link-icon" data-feather="maximize-2"></i>
                             <span class="link-title">Size</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="sizes">
+                        <div class="collapse" id="sizeCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
                                     <a href="{{ route('size.create') }}" class="nav-link">Add Size</a>
@@ -142,12 +145,12 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#brands" role="button" aria-expanded="false" aria-controls="brands">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#brandCollapse" role="button" aria-expanded="false" aria-controls="brandCollapse">
                             <i class="link-icon" data-feather="tag"></i>
                             <span class="link-title">Brand</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="brands">
+                        <div class="collapse" id="brandCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
                                     <a href="{{ route('brand.create') }}" class="nav-link">Add Brand</a>
@@ -160,14 +163,14 @@
                     </li>
 
                     <!-- Products Section -->
-                    <li class="nav-item nav-category">Products</li>
+                    <li class="nav-item ">Products</li>
                     <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#products" role="button" aria-expanded="false" aria-controls="products">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#productCollapse" role="button" aria-expanded="false" aria-controls="productCollapse">
                             <i class="link-icon" data-feather="shopping-bag"></i>
                             <span class="link-title">Products</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="products">
+                        <div class="collapse" id="productCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
                                     <a href="{{ route('product.create') }}" class="nav-link">Add Product</a>
@@ -180,14 +183,59 @@
                     </li>
 
                     <!-- Settings Section -->
-                    <li class="nav-item nav-category">Settings</li>
+                    <li class="nav-item ">Settings</li>
+
                     <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#banners" role="button" aria-expanded="false" aria-controls="banners">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#sliderCollapse" role="button" aria-expanded="false" aria-controls="sliderCollapse">
+                            <i class="link-icon" data-feather="image"></i>
+                            <span class="link-title">Sliders</span>
+                            <i class="link-arrow" data-feather="chevron-down"></i>
+                        </a>
+                        <div class="collapse" id="sliderCollapse">
+                            <ul class="nav sub-menu">
+                                <li class="nav-item">
+                                    <a href="{{ route('slider.create') }}" class="nav-link">Add New Slider</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('slider.index') }}" class="nav-link">Manage Sliders</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <!-- Add this to your sidebar menu in dashboard.blade.php under the Settings section -->
+                    <li class="nav-item">
+                        <a href="{{ route('logo.edit') }}" class="nav-link">
+                            <i class="link-icon" data-feather="image"></i>
+                            <span class="link-title">Logo Settings</span>
+                        </a>
+                    </li>
+                    <!-- Add this under the "Settings" section in the sidebar of your dashboard.blade.php file -->
+
+                    <li class="nav-item">
+                        <a href="{{ route('hero.index') }}" class="nav-link">
+                            <i class="link-icon" data-feather="home"></i>
+                            <span class="link-title">Hero Section</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('footer.edit') }}" class="nav-link">
+                            <i class="link-icon" data-feather="share-2"></i>
+                            <span class="link-title">Footer Social Links</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('faq.create') }}" class="nav-link">
+                            <i class="link-icon" data-feather="share-2"></i>
+                            <span class="link-title">Faq</span>
+                        </a>
+                    </li>
+                    {{-- <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#bannerCollapse" role="button" aria-expanded="false" aria-controls="bannerCollapse">
                             <i class="link-icon" data-feather="image"></i>
                             <span class="link-title">Banners</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="banners">
+                        <div class="collapse" id="bannerCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
                                     <a href="#" class="nav-link">Hero Banner</a>
@@ -203,15 +251,15 @@
                                 </li>
                             </ul>
                         </div>
-                    </li>
+                    </li> --}}
 
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#logos" role="button" aria-expanded="false" aria-controls="logos">
+                    {{-- <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#logoCollapse" role="button" aria-expanded="false" aria-controls="logoCollapse">
                             <i class="link-icon" data-feather="award"></i>
                             <span class="link-title">Logo</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="logos">
+                        <div class="collapse" id="logoCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
                                     <a href="#" class="nav-link">Top Logo</a>
@@ -221,15 +269,15 @@
                                 </li>
                             </ul>
                         </div>
-                    </li>
+                    </li> --}}
 
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#titles" role="button" aria-expanded="false" aria-controls="titles">
+                    {{-- <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#titleCollapse" role="button" aria-expanded="false" aria-controls="titleCollapse">
                             <i class="link-icon" data-feather="type"></i>
                             <span class="link-title">Titles</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="titles">
+                        <div class="collapse" id="titleCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
                                     <a href="#" class="nav-link">Hero Title</a>
@@ -239,9 +287,9 @@
                                 </li>
                             </ul>
                         </div>
-                    </li>
+                    </li> --}}
 
-                    <li class="nav-item nav-category">Support</li>
+                    {{-- <li class="nav-item nav-category">Support</li> --}}
                     <li class="nav-item">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -251,12 +299,9 @@
                             </button>
                         </form>
                     </li>
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="btn btn-primary" href="{{ route('register') }}">Register</a>
-                    </li>
-
-
-
+                    </li> --}}
                 </ul>
             </div>
         </nav>
@@ -322,7 +367,7 @@
 
             <!-- partial:partials/_footer.html -->
             <footer class="footer d-flex flex-column flex-md-row align-items-center justify-content-between px-4 py-3 border-top small">
-                <p class="text-muted mb-1 mb-md-0">Copyright © 2025 <a href="https://www.nobleui.com" target="_blank">PureHoney</a>.</p>
+                <p class="text-muted mb-1 mb-md-0">Copyright © 2025 <a href="https://www.emanagerit.com" target="_blank">SamiaFashion</a>.</p>
                 <p class="text-muted">Designed and Developed by <a href="https://www.emanagerit.com/">eManagerIt</a></p>
             </footer>
             <!-- partial -->

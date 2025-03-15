@@ -52,7 +52,7 @@ class ProductApiController extends Controller
                     'discount' => $isOnSale ? $product->price : null,
                     'featured' => (bool) $product->featured,
                     'image' => $imageUrl,
-                    'hoverImage' => $imageUrl, // You might want to implement a secondary image for hover
+                    'hoverImage' => $imageUrl, 
                     'sizes' => $sizes
                 ];
             });
@@ -220,4 +220,62 @@ class ProductApiController extends Controller
             ], 400);
         }
     }
+
+
+
+
+
+
+
+    public function getProduct($id)
+{
+    try {
+        $product = Product::with([
+            'brand', 
+            'productSizes.size', 
+            'images'
+        ])->findOrFail($id);
+        
+        // Format the response
+        $response = [
+            'id' => $product->id,
+            'name' => $product->name,
+            'description' => $product->description,
+            'price' => $product->price,
+            'discount_price' => $product->discount_price,
+            'featured' => (bool)$product->featured,
+            'status' => (bool)$product->status,
+            'brand' => [
+                'id' => $product->brand->id,
+                'name' => $product->brand->name
+            ],
+            'sizes' => $product->productSizes->map(function($productSize) {
+                return [
+                    'id' => $productSize->size->id,
+                    'name' => $productSize->size->size,
+                    'quantity' => $productSize->quantity,
+                    'in_stock' => $productSize->quantity > 0
+                ];
+            }),
+            'images' => $product->images->map(function($image) {
+                return [
+                    'id' => $image->id,
+                    'url' => asset('storage/' . $image->image_path),
+                    'is_primary' => (bool)$image->is_primary
+                ];
+            }),
+            'total_stock' => $product->getTotalStock(),
+            'is_on_sale' => $product->isOnSale(),
+            'created_at' => $product->created_at,
+            'updated_at' => $product->updated_at
+        ];
+        
+        return response()->json($response);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Product not found',
+            'message' => $e->getMessage()
+        ], 404);
+    }
+}
 }

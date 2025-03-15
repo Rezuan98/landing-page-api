@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('phone');
-            $table->string('city');
+            $table->string('city')->nullable();
             $table->text('address');
             $table->integer('quantity');
             $table->string('shipping_option');

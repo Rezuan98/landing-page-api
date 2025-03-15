@@ -7,6 +7,10 @@ use App\Http\Controllers\backend\OrderController;
 use App\Http\Controllers\backend\SizeController;
 use App\Http\Controllers\backend\BrandController;
 use App\Http\Controllers\backend\ProductController;
+use App\Http\Controllers\backend\SliderController;
+use App\Http\Controllers\backend\LogoController;
+use App\Http\Controllers\backend\FooterSocialController;
+use App\Http\Controllers\backend\FaqController;
 
 
 
@@ -41,7 +45,7 @@ Route::get('/brand/index', [BrandController::class, 'index'])->name('brand.index
 Route::post('/brand/delete/{id}', [BrandController::class, 'delete'])->name('brand.delete');
 
 
-Route::get('/product/create', [ProductController::class, 'create'])->name('product.create');
+Route::get('/product/create', [ProductController::class,'create'])->name('product.create');
 Route::post('/product/store', [ProductController::class, 'store'])->name('product.store');
 Route::get('/product/index', [ProductController::class, 'index'])->name('product.index');
 Route::get('/product/show/{id}', [ProductController::class, 'show'])->name('product.show');
@@ -57,7 +61,7 @@ Route::post('/product/image/primary/{id}', [ProductController::class, 'setPrimar
 
 
 
-// Order routes - Add these to your web.php file
+// Order routes 
 Route::get('/order/index', [OrderController::class, 'index'])->name('index.order');
 Route::get('/order/show/{id}', [OrderController::class, 'show'])->name('order.show');
 Route::post('/order/update-status/{id}', [OrderController::class, 'updateStatus'])->name('order.update-status');
@@ -67,12 +71,45 @@ Route::post('/order/delete/{id}', [OrderController::class, 'delete'])->name('ord
 
 
 
+// Slider routes
+Route::get('/slider/create', [SliderController::class, 'create'])->name('slider.create');
+Route::post('/slider/store', [SliderController::class, 'store'])->name('slider.store');
+Route::get('/slider/index', [SliderController::class, 'index'])->name('slider.index');
+Route::post('/slider/delete/{id}', [SliderController::class, 'delete'])->name('slider.delete');
+
+
+
+// Add these to your web.php file
+
+
+
+
+// Admin Routes for FAQ Management
+Route::get('/faq/index', [FaqController::class, 'index'])->name('faq.index');
+Route::get('/faq/create', [FaqController::class, 'create'])->name('faq.create');
+Route::post('/faq/store', [FaqController::class, 'store'])->name('faq.store');
+Route::get('/faq/edit/{id}', [FaqController::class, 'edit'])->name('faq.edit');
+Route::post('/faq/update/{id}', [FaqController::class, 'update'])->name('faq.update');
+Route::post('/faq/delete/{id}', [FaqController::class, 'delete'])->name('faq.delete');
+Route::post('/faq/update-order', [FaqController::class, 'updateOrder'])->name('faq.update-order');
 
 
 
 
 
 
+
+// Logo Routes
+Route::get('/logo/edit', [LogoController::class, 'edit'])->name('logo.edit');
+Route::post('/logo/update', [LogoController::class, 'update'])->name('logo.update');
+
+// Footer Social Links Routes
+Route::get('/footer/edit', [FooterSocialController::class, 'edit'])->name('footer.edit');
+Route::post('/footer/update',[FooterSocialController::class, 'update'])->name('footer.update');
+
+
+Route::get('/hero/settings', [App\Http\Controllers\backend\HeroController::class, 'index'])->name('hero.index');
+Route::post('/hero/update', [App\Http\Controllers\backend\HeroController::class, 'update'])->name('hero.update');
 
 });
 
