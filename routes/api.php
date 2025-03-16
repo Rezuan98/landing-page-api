@@ -10,6 +10,8 @@ use App\Http\Controllers\SliderApiController;
 use App\Http\Controllers\backend\FaqController;
 use App\Http\Controllers\SettingController;
 
+use App\Http\Controllers\FooterSocialApiController;
+
 
 
 
@@ -55,4 +57,4 @@ Route::get('/hero', [App\Http\Controllers\backend\HeroController::class, 'getAct
 
 // Add this to your routes/api.php file
 
-Route::get('/footer-social', 'App\Http\Controllers\Api\FooterSocialApiController@index');
+Route::get('/footer-social', [FooterSocialApiController::class,'index']);

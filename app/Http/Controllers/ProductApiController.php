@@ -21,6 +21,7 @@ class ProductApiController extends Controller
                 $query->where('is_primary', true);
             }])
             ->where('status', 1)
+            ->where('featured', 0)
             ->latest()
             ->get();
             
