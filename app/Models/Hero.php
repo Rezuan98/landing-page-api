@@ -12,6 +12,8 @@ class Hero extends Model
     protected $fillable = [
         'title',
         'description',
-        'is_active'
+        'is_active',
+        'hero_type',
+        'video',
     ];
 }
