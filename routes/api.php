@@ -24,11 +24,7 @@ Route::post('/orders', [OrderApiController::class, 'store']);
 // Route::post('/order/create', [OrderController::class, 'store']);
 
 // Product routes
-Route::post('/check-product-size', [ProductController::class, 'checkProductSize']);
-
-Route::get('/products/search', [ProductController::class, 'searchProducts']);
 Route::get('/categories', [ProductController::class, 'getCategories']);
-
 
 // fetch products
 Route::get('/products/collections', [ProductApiController::class, 'index']);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\backend;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\FooterSocial;
+use Illuminate\Support\Facades\Cache;
 
 class FooterSocialController extends Controller
 {
@@ -49,6 +50,7 @@ class FooterSocialController extends Controller
             'twitter_url' => $request->twitter_url,
         ]);
 
+        Cache::forget('footer_social');
         return redirect()->back()->with('success', 'Footer social links updated successfully!');
     }
 }

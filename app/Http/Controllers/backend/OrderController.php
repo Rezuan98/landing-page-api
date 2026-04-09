@@ -131,31 +131,31 @@ class OrderController extends Controller
             'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled',
         ]);
         
-        $count = 0;
-        
-        foreach ($request->order_ids as $orderId) {
-            $order = Order::find($orderId);
-            
-            if ($order) {
-                $oldStatus = $order->status;
-                $newStatus = $request->status;
-                
-                // Handle inventory adjustments
-                if ($oldStatus == 'cancelled' && $newStatus != 'cancelled') {
-                    $this->updateInventory($order->product_id, $order->size_id, -$order->quantity);
-                }
-                
-                if ($newStatus == 'cancelled' && $oldStatus != 'cancelled') {
-                    $this->updateInventory($order->product_id, $order->size_id, $order->quantity);
-                }
-                
-                $order->status = $newStatus;
-                $order->save();
-                $count++;
+        $newStatus = $request->status;
+
+        // Load all orders in a single query instead of one per order
+        $orders = Order::whereIn('id', $request->order_ids)->get();
+
+        $needsInventoryAdjustment = $orders->filter(function ($order) use ($newStatus) {
+            return ($order->status === 'cancelled' && $newStatus !== 'cancelled')
+                || ($newStatus === 'cancelled' && $order->status !== 'cancelled');
+        });
+
+        // Handle inventory adjustments for affected orders
+        foreach ($needsInventoryAdjustment as $order) {
+            if ($order->status === 'cancelled' && $newStatus !== 'cancelled') {
+                $this->updateInventory($order->product_id, $order->size_id, -$order->quantity);
+            } else {
+                $this->updateInventory($order->product_id, $order->size_id, $order->quantity);
             }
         }
-        
-        return redirect()->back()->with('success', "{$count} orders updated to " . ucfirst($request->status));
+
+        // Batch update all orders in one query
+        Order::whereIn('id', $orders->pluck('id'))->update(['status' => $newStatus]);
+
+        $count = $orders->count();
+
+        return redirect()->back()->with('success', "{$count} orders updated to " . ucfirst($newStatus));
     }
     
     /**

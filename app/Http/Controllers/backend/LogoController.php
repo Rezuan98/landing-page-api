@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Logo;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class LogoController extends Controller
 {
@@ -60,7 +61,8 @@ class LogoController extends Controller
         $logo->phone_number = $request->phone_number;
         
         $logo->save();
-        
+        Cache::forget('site_settings');
+
         return redirect()->back()->with('success', 'Logo and settings updated successfully!');
     }
 }

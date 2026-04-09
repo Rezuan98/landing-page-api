@@ -28,49 +28,96 @@
     <!-- End layout styles -->
 
     <style>
-        .toast-success {
-            background-color: #28a745 !important;
-            /* Green */
-            color: white !important;
+        /* ── Toast overrides ── */
+        .toast-success { background-color: #28a745 !important; color: white !important; }
+        .toast-error   { background-color: #dc3545 !important; color: white !important; }
+        .toast-info    { background-color: #ffc107 !important; color: white !important; }
+        .toast-warning { background-color: #ffc107 !important; color: black  !important; }
+        .toast-title   { font-weight: bold; }
+        .toast-message { font-size: 14px; }
+
+        /* ── Sidebar: force inactive links to theme grey, never browser-blue ── */
+        .sidebar .sidebar-body .nav .nav-item .nav-link,
+        .sidebar .sidebar-body .nav .nav-item .nav-link .link-icon,
+        .sidebar .sidebar-body .nav .nav-item .nav-link .link-title,
+        .sidebar .sidebar-body .nav .nav-item .nav-link .link-arrow {
+            color: #7987a1 !important;
+        }
+        .sidebar .sidebar-body .nav .nav-item.active > .nav-link,
+        .sidebar .sidebar-body .nav .nav-item.active > .nav-link .link-icon,
+        .sidebar .sidebar-body .nav .nav-item.active > .nav-link .link-title,
+        .sidebar .sidebar-body .nav .nav-item.active > .nav-link .link-arrow {
+            color: #6571ff !important;
+        }
+        .sidebar .sidebar-body .nav .nav-item:hover > .nav-link,
+        .sidebar .sidebar-body .nav .nav-item:hover > .nav-link .link-icon,
+        .sidebar .sidebar-body .nav .nav-item:hover > .nav-link .link-title,
+        .sidebar .sidebar-body .nav .nav-item:hover > .nav-link .link-arrow {
+            color: #6571ff !important;
+        }
+        /* Expanded collapse trigger */
+        .sidebar .sidebar-body .nav .nav-item .nav-link[aria-expanded="true"] {
+            color: #6571ff !important;
+        }
+        /* Sub-menu active link */
+        .sidebar .sidebar-body .nav.sub-menu .nav-item .nav-link.active {
+            color: #6571ff !important;
+        }
+        .sidebar .sidebar-body .nav.sub-menu .nav-item .nav-link {
+            color: #7987a1 !important;
         }
 
-        .toast-error {
-            background-color: #dc3545 !important;
-            /* Red */
-            color: white !important;
+        /* ── Responsiveness ── */
+        /* Navbar: hide date/time/email labels on very small screens */
+        @media (max-width: 575px) {
+            .navbar .navbar-content .navbar-nav .nav-item:not(:last-child) {
+                display: none;
+            }
+            .navbar .search-form {
+                max-width: 140px;
+            }
+            .page-content {
+                padding: 1rem 0.75rem;
+            }
         }
-
-        .toast-info {
-            background-color: #ffc107 !important;
-            /* Blue */
-            color: white !important;
+        /* Tables always scrollable horizontally */
+        .page-content .table-responsive,
+        .page-content table {
+            width: 100%;
         }
-
-        .toast-warning {
-            background-color: #ffc107 !important;
-            /* Yellow */
-            color: black !important;
+        .page-content .card-body {
+            overflow-x: auto;
         }
-
-        .toast-title {
-            font-weight: bold;
+        /* Prevent content overflow */
+        .page-wrapper {
+            min-width: 0;
+            overflow-x: hidden;
         }
-
-        .toast-message {
-            font-size: 14px;
+        /* Form controls on small screens */
+        @media (max-width: 767px) {
+            .card-body .row > [class*="col-md"] {
+                margin-bottom: 0.5rem;
+            }
+            .d-flex.justify-content-between {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            .navbar .navbar-content {
+                flex-wrap: nowrap;
+                overflow: hidden;
+            }
+            /* Stack action buttons vertically on mobile */
+            td .d-flex {
+                flex-wrap: wrap;
+                gap: 2px;
+            }
         }
-
     </style>
-
-
-
-
-
 </head>
 <body>
     <div class="main-wrapper">
 
-        <!-- partial:partials/_sidebar.html -->
+        <!-- Sidebar -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
@@ -84,212 +131,170 @@
             </div>
             <div class="sidebar-body">
                 <ul class="nav">
-                    <li class="nav-item ">Main</li>
-                    <li class="nav-item">
+
+                    {{-- ── Main ── --}}
+                    <li class="nav-item nav-category">Main</li>
+                    <li class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                         <a href="{{ route('admin.dashboard') }}" class="nav-link">
                             <i class="link-icon" data-feather="box"></i>
                             <span class="link-title">Dashboard</span>
                         </a>
                     </li>
 
-                    <!-- Order Management Section -->
-                    <li class="nav-item ">Orders</li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#orderCollapse" role="button" aria-expanded="false" aria-controls="orderCollapse">
+                    {{-- ── Orders ── --}}
+                    @php $ordersActive = request()->routeIs('index.order', 'order.*'); @endphp
+                    <li class="nav-item nav-category">Orders</li>
+                    <li class="nav-item {{ $ordersActive ? 'active' : '' }}">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#orderCollapse" role="button"
+                           aria-expanded="{{ $ordersActive ? 'true' : 'false' }}" aria-controls="orderCollapse">
                             <i class="link-icon" data-feather="shopping-cart"></i>
                             <span class="link-title">Order Management</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="orderCollapse">
+                        <div class="collapse {{ $ordersActive ? 'show' : '' }}" id="orderCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
-                                    <a href="{{ route('index.order') }}" class="nav-link">All Orders</a>
+                                    <a href="{{ route('index.order') }}" class="nav-link {{ request()->routeIs('index.order') && !request()->has('status') ? 'active' : '' }}">All Orders</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('index.order') }}?status=pending" class="nav-link">Pending Orders</a>
+                                    <a href="{{ route('index.order') }}?status=pending" class="nav-link {{ request()->routeIs('index.order') && request()->status === 'pending' ? 'active' : '' }}">Pending Orders</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('index.order') }}?status=processing" class="nav-link">Processing Orders</a>
+                                    <a href="{{ route('index.order') }}?status=processing" class="nav-link {{ request()->routeIs('index.order') && request()->status === 'processing' ? 'active' : '' }}">Processing Orders</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('index.order') }}?status=shipped" class="nav-link">Shipped Orders</a>
+                                    <a href="{{ route('index.order') }}?status=shipped" class="nav-link {{ request()->routeIs('index.order') && request()->status === 'shipped' ? 'active' : '' }}">Shipped Orders</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('index.order') }}?status=completed" class="nav-link">Completed Orders</a>
+                                    <a href="{{ route('index.order') }}?status=completed" class="nav-link {{ request()->routeIs('index.order') && request()->status === 'completed' ? 'active' : '' }}">Completed Orders</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('index.order') }}?status=cancelled" class="nav-link">Cancelled Orders</a>
+                                    <a href="{{ route('index.order') }}?status=cancelled" class="nav-link {{ request()->routeIs('index.order') && request()->status === 'cancelled' ? 'active' : '' }}">Cancelled Orders</a>
                                 </li>
                             </ul>
                         </div>
                     </li>
 
-                    <!-- Product Data Section -->
-                    <li class="nav-item ">Product Data</li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#sizeCollapse" role="button" aria-expanded="false" aria-controls="sizeCollapse">
+                    {{-- ── Product Data ── --}}
+                    @php
+                        $sizeActive  = request()->routeIs('size.*');
+                        $brandActive = request()->routeIs('brand.*');
+                    @endphp
+                    <li class="nav-item nav-category">Product Data</li>
+                    <li class="nav-item {{ $sizeActive ? 'active' : '' }}">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#sizeCollapse" role="button"
+                           aria-expanded="{{ $sizeActive ? 'true' : 'false' }}" aria-controls="sizeCollapse">
                             <i class="link-icon" data-feather="maximize-2"></i>
                             <span class="link-title">Size</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="sizeCollapse">
+                        <div class="collapse {{ $sizeActive ? 'show' : '' }}" id="sizeCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
-                                    <a href="{{ route('size.create') }}" class="nav-link">Add Size</a>
+                                    <a href="{{ route('size.create') }}" class="nav-link {{ request()->routeIs('size.create') ? 'active' : '' }}">Add Size</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('size.index') }}" class="nav-link">Show Sizes</a>
+                                    <a href="{{ route('size.index') }}" class="nav-link {{ request()->routeIs('size.index') ? 'active' : '' }}">Show Sizes</a>
                                 </li>
                             </ul>
                         </div>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#brandCollapse" role="button" aria-expanded="false" aria-controls="brandCollapse">
+                    <li class="nav-item {{ $brandActive ? 'active' : '' }}">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#brandCollapse" role="button"
+                           aria-expanded="{{ $brandActive ? 'true' : 'false' }}" aria-controls="brandCollapse">
                             <i class="link-icon" data-feather="tag"></i>
                             <span class="link-title">Brand</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="brandCollapse">
+                        <div class="collapse {{ $brandActive ? 'show' : '' }}" id="brandCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
-                                    <a href="{{ route('brand.create') }}" class="nav-link">Add Brand</a>
+                                    <a href="{{ route('brand.create') }}" class="nav-link {{ request()->routeIs('brand.create') ? 'active' : '' }}">Add Brand</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('brand.index') }}" class="nav-link">Show Brands</a>
+                                    <a href="{{ route('brand.index') }}" class="nav-link {{ request()->routeIs('brand.index') ? 'active' : '' }}">Show Brands</a>
                                 </li>
                             </ul>
                         </div>
                     </li>
 
-                    <!-- Products Section -->
-                    <li class="nav-item ">Products</li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#productCollapse" role="button" aria-expanded="false" aria-controls="productCollapse">
+                    {{-- ── Products ── --}}
+                    @php $productActive = request()->routeIs('product.*'); @endphp
+                    <li class="nav-item nav-category">Products</li>
+                    <li class="nav-item {{ $productActive ? 'active' : '' }}">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#productCollapse" role="button"
+                           aria-expanded="{{ $productActive ? 'true' : 'false' }}" aria-controls="productCollapse">
                             <i class="link-icon" data-feather="shopping-bag"></i>
                             <span class="link-title">Products</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="productCollapse">
+                        <div class="collapse {{ $productActive ? 'show' : '' }}" id="productCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
-                                    <a href="{{ route('product.create') }}" class="nav-link">Add Product</a>
+                                    <a href="{{ route('product.create') }}" class="nav-link {{ request()->routeIs('product.create') ? 'active' : '' }}">Add Product</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('product.index') }}" class="nav-link">Show Products</a>
+                                    <a href="{{ route('product.index') }}" class="nav-link {{ request()->routeIs('product.index', 'product.show', 'product.edit') ? 'active' : '' }}">Show Products</a>
                                 </li>
                             </ul>
                         </div>
                     </li>
 
-                    <!-- Settings Section -->
-                    <li class="nav-item ">Settings</li>
+                    {{-- ── Settings ── --}}
+                    @php
+                        $sliderActive  = request()->routeIs('slider.*');
+                        $faqActive     = request()->routeIs('faq.*');
+                    @endphp
+                    <li class="nav-item nav-category">Settings</li>
 
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#sliderCollapse" role="button" aria-expanded="false" aria-controls="sliderCollapse">
+                    <li class="nav-item {{ $sliderActive ? 'active' : '' }}">
+                        <a class="nav-link" data-bs-toggle="collapse" href="#sliderCollapse" role="button"
+                           aria-expanded="{{ $sliderActive ? 'true' : 'false' }}" aria-controls="sliderCollapse">
                             <i class="link-icon" data-feather="image"></i>
                             <span class="link-title">Sliders</span>
                             <i class="link-arrow" data-feather="chevron-down"></i>
                         </a>
-                        <div class="collapse" id="sliderCollapse">
+                        <div class="collapse {{ $sliderActive ? 'show' : '' }}" id="sliderCollapse">
                             <ul class="nav sub-menu">
                                 <li class="nav-item">
-                                    <a href="{{ route('slider.create') }}" class="nav-link">Add New Slider</a>
+                                    <a href="{{ route('slider.create') }}" class="nav-link {{ request()->routeIs('slider.create') ? 'active' : '' }}">Add New Slider</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('slider.index') }}" class="nav-link">Manage Sliders</a>
+                                    <a href="{{ route('slider.index') }}" class="nav-link {{ request()->routeIs('slider.index') ? 'active' : '' }}">Manage Sliders</a>
                                 </li>
                             </ul>
                         </div>
                     </li>
-                    <!-- Add this to your sidebar menu in dashboard.blade.php under the Settings section -->
-                    <li class="nav-item">
+
+                    <li class="nav-item {{ request()->routeIs('logo.edit') ? 'active' : '' }}">
                         <a href="{{ route('logo.edit') }}" class="nav-link">
                             <i class="link-icon" data-feather="image"></i>
                             <span class="link-title">Logo Settings</span>
                         </a>
                     </li>
-                    <!-- Add this under the "Settings" section in the sidebar of your dashboard.blade.php file -->
 
-                    <li class="nav-item">
+                    <li class="nav-item {{ request()->routeIs('hero.index') ? 'active' : '' }}">
                         <a href="{{ route('hero.index') }}" class="nav-link">
                             <i class="link-icon" data-feather="home"></i>
                             <span class="link-title">Hero Section</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+
+                    <li class="nav-item {{ request()->routeIs('footer.edit') ? 'active' : '' }}">
                         <a href="{{ route('footer.edit') }}" class="nav-link">
                             <i class="link-icon" data-feather="share-2"></i>
                             <span class="link-title">Footer Social Links</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+
+                    <li class="nav-item {{ $faqActive ? 'active' : '' }}">
                         <a href="{{ route('faq.create') }}" class="nav-link">
-                            <i class="link-icon" data-feather="share-2"></i>
-                            <span class="link-title">Faq</span>
+                            <i class="link-icon" data-feather="help-circle"></i>
+                            <span class="link-title">FAQ</span>
                         </a>
                     </li>
-                    {{-- <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#bannerCollapse" role="button" aria-expanded="false" aria-controls="bannerCollapse">
-                            <i class="link-icon" data-feather="image"></i>
-                            <span class="link-title">Banners</span>
-                            <i class="link-arrow" data-feather="chevron-down"></i>
-                        </a>
-                        <div class="collapse" id="bannerCollapse">
-                            <ul class="nav sub-menu">
-                                <li class="nav-item">
-                                    <a href="#" class="nav-link">Hero Banner</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="#" class="nav-link">Middle Banner</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="#" class="nav-link">About Banner</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="#" class="nav-link">Contact Banner</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li> --}}
 
-                    {{-- <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#logoCollapse" role="button" aria-expanded="false" aria-controls="logoCollapse">
-                            <i class="link-icon" data-feather="award"></i>
-                            <span class="link-title">Logo</span>
-                            <i class="link-arrow" data-feather="chevron-down"></i>
-                        </a>
-                        <div class="collapse" id="logoCollapse">
-                            <ul class="nav sub-menu">
-                                <li class="nav-item">
-                                    <a href="#" class="nav-link">Top Logo</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="#" class="nav-link">Favicon</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li> --}}
-
-                    {{-- <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="collapse" href="#titleCollapse" role="button" aria-expanded="false" aria-controls="titleCollapse">
-                            <i class="link-icon" data-feather="type"></i>
-                            <span class="link-title">Titles</span>
-                            <i class="link-arrow" data-feather="chevron-down"></i>
-                        </a>
-                        <div class="collapse" id="titleCollapse">
-                            <ul class="nav sub-menu">
-                                <li class="nav-item">
-                                    <a href="#" class="nav-link">Hero Title</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="#" class="nav-link">Footer Title</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li> --}}
-
-                    {{-- <li class="nav-item nav-category">Support</li> --}}
                     <li class="nav-item">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -299,18 +304,15 @@
                             </button>
                         </form>
                     </li>
-                    {{-- <li class="nav-item">
-                        <a class="btn btn-primary" href="{{ route('register') }}">Register</a>
-                    </li> --}}
+
                 </ul>
             </div>
         </nav>
-
-        <!-- partial -->
+        <!-- /Sidebar -->
 
         <div class="page-wrapper">
 
-            <!-- partial:partials/_navbar.html -->
+            <!-- Navbar -->
             <nav class="navbar">
                 <a href="#" class="sidebar-toggler">
                     <i data-feather="menu"></i>
@@ -325,82 +327,53 @@
                         </div>
                     </form>
                     <ul class="navbar-nav">
-                        <!-- Current Date & Time -->
-                        <li class="nav-item dropdown me-3">
+                        <li class="nav-item d-none d-md-flex me-3">
                             <a class="nav-link d-flex align-items-center" href="#" role="button">
                                 <i data-feather="calendar" class="icon-md text-muted me-1"></i>
                                 <span id="currentDate"></span>
                             </a>
                         </li>
-
-                        <li class="nav-item dropdown me-3">
+                        <li class="nav-item d-none d-md-flex me-3">
                             <a class="nav-link d-flex align-items-center" href="#" role="button">
                                 <i data-feather="clock" class="icon-md text-muted me-1"></i>
                                 <span id="currentTime"></span>
                             </a>
                         </li>
-
-
-
-                        <!-- Admin Email Display -->
-                        <li class="nav-item me-3">
+                        <li class="nav-item d-none d-sm-flex me-3">
                             <a class="nav-link d-flex align-items-center" href="#" role="button">
                                 <i data-feather="mail" class="icon-md text-muted me-1"></i>
                                 <span>{{ Auth::user()->email }}</span>
                             </a>
                         </li>
-
-
-                        <!-- User Profile -->
-
                     </ul>
                 </div>
             </nav>
-            <!-- partial -->
-
-
+            <!-- /Navbar -->
 
             <div class="page-content">
                 @yield('content')
             </div>
 
-
-            <!-- partial:partials/_footer.html -->
             <footer class="footer d-flex flex-column flex-md-row align-items-center justify-content-between px-4 py-3 border-top small">
-                <p class="text-muted mb-1 mb-md-0">Copyright © 2025 <a href="https://www.emanagerit.com" target="_blank">SamiaFashion</a>.</p>
-                <p class="text-muted">Designed and Developed by <a href="https://www.emanagerit.com/">eManagerIt</a></p>
+                <p class="text-muted mb-1 mb-md-0">Copyright &copy; 2026 <a href="https://revencomm.com/" target="_blank">Shongini Life Style</a>.</p>
+                <p class="text-muted">Designed and Developed by <a href="https://revencomm.com/">RevEnComm</a></p>
             </footer>
-            <!-- partial -->
 
         </div>
     </div>
 
     <!-- core:js -->
     <script src="<?= asset('backend/assets/vendors/core/core.js') ?>"></script>
-    <!-- endinject -->
-
-    <!-- Plugin js for this page -->
     <script src="<?= asset('backend/assets/vendors/flatpickr/flatpickr.min.js') ?>"></script>
     <script src="<?= asset('backend/assets/vendors/apexcharts/apexcharts.min.js') ?>"></script>
-    <!-- End plugin js for this page -->
-
-    <!-- inject:js -->
     <script src="<?= asset('backend/assets/vendors/feather-icons/feather.min.js') ?>"></script>
     <script src="<?= asset('backend/assets/js/template.js') ?>"></script>
-    <!-- endinject -->
-
-    <!-- Custom js for this page -->
     <script src="<?= asset('backend/assets/js/dashboard-dark.js') ?>"></script>
-    <!-- End custom js for this page -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
-    {{-- toaster --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
-
     @stack('scripts')
-
 
     <script>
         @if(session('success'))
@@ -412,39 +385,18 @@
         @if(session('error'))
         toastr.error("{{ session('error') }}");
         @endif
-
     </script>
+
     <script>
-        // Function to update the date and time
         function updateDateTime() {
             const now = new Date();
-
-            // Format date: Mar 11, 2025
-            const options = {
-                year: 'numeric'
-                , month: 'short'
-                , day: 'numeric'
-            };
-            const dateStr = now.toLocaleDateString('en-US', options);
-
-            // Format time with seconds: 12:34:56 PM
-            const timeStr = now.toLocaleTimeString('en-US', {
-                hour: '2-digit'
-                , minute: '2-digit'
-                , second: '2-digit'
-            });
-
-            // Update the elements
-            document.getElementById('currentDate').textContent = dateStr;
-            document.getElementById('currentTime').textContent = timeStr;
+            const dateEl = document.getElementById('currentDate');
+            const timeEl = document.getElementById('currentTime');
+            if (dateEl) dateEl.textContent = now.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            if (timeEl) timeEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
-
-        // Update initially
         updateDateTime();
-
-        // Update every second for real-time accuracy
         setInterval(updateDateTime, 1000);
-
     </script>
 
 </body>

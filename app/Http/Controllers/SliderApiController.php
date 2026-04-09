@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Slider;
+use Illuminate\Support\Facades\Cache;
 
 class SliderApiController extends Controller
 {
@@ -16,10 +17,10 @@ class SliderApiController extends Controller
     public function getSliders()
     {
         try {
-            $sliders = Slider::where('status', 1)
-                ->orderBy('order')
-                ->get();
-                
+            $sliders = Cache::remember('active_sliders', 600, function () {
+                return Slider::where('status', 1)->orderBy('order')->get();
+            });
+
             return response()->json($sliders);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch sliders'], 500);

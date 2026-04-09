@@ -47,39 +47,40 @@ class IndexController extends Controller
                 ->take(5)
                 ->get();
             
-            // Generate data for sparkline charts (last 7 days)
-            // Orders chart data for status 'pending'
+            // Generate data for sparkline charts (last 7 days) — 3 queries instead of 21
+            $sevenDaysAgo = Carbon::now()->subDays(6)->startOfDay();
+
+            $chartRows = Order::select(
+                    DB::raw('DATE(created_at) as date'),
+                    'status',
+                    DB::raw('COUNT(*) as count'),
+                    DB::raw('SUM(total) as total_sales')
+                )
+                ->where('created_at', '>=', $sevenDaysAgo)
+                ->whereIn('status', ['pending', 'completed'])
+                ->groupBy(DB::raw('DATE(created_at)'), 'status')
+                ->get()
+                ->groupBy('date');
+
             $pendingOrdersChartData = [];
-            for ($i = 6; $i >= 0; $i--) {
-                $date = Carbon::now()->subDays($i)->format('Y-m-d');
-                $count = Order::where('status', 'pending')
-                    ->whereDate('created_at', $date)
-                    ->count();
-                $pendingOrdersChartData[] = $count;
-            }
-            $pendingOrdersChart = implode(', ', $pendingOrdersChartData);
-            
-            // Orders chart data for status 'completed'
             $completedOrdersChartData = [];
-            for ($i = 6; $i >= 0; $i--) {
-                $date = Carbon::now()->subDays($i)->format('Y-m-d');
-                $count = Order::where('status', 'completed')
-                    ->whereDate('created_at', $date)
-                    ->count();
-                $completedOrdersChartData[] = $count;
-            }
-            $completedOrdersChart = implode(', ', $completedOrdersChartData);
-            
-            // Sales chart data
             $salesChartData = [];
+
             for ($i = 6; $i >= 0; $i--) {
                 $date = Carbon::now()->subDays($i)->format('Y-m-d');
-                $sales = Order::where('status', 'completed')
-                    ->whereDate('created_at', $date)
-                    ->sum('total');
-                $salesChartData[] = $sales ?: 0;
+                $dayRows = $chartRows->get($date, collect());
+
+                $pending   = $dayRows->firstWhere('status', 'pending');
+                $completed = $dayRows->firstWhere('status', 'completed');
+
+                $pendingOrdersChartData[]   = $pending   ? $pending->count       : 0;
+                $completedOrdersChartData[] = $completed ? $completed->count     : 0;
+                $salesChartData[]           = $completed ? ($completed->total_sales ?: 0) : 0;
             }
-            $salesChart = implode(', ', $salesChartData);
+
+            $pendingOrdersChart   = implode(', ', $pendingOrdersChartData);
+            $completedOrdersChart = implode(', ', $completedOrdersChartData);
+            $salesChart           = implode(', ', $salesChartData);
             
             // Calculate growth rates (compared to previous period)
             // Growth rate for completed orders

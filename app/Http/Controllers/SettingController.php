@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Logo;
+use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {
@@ -16,15 +17,18 @@ class SettingController extends Controller
     public function getSettings()
     {
         try {
-            $logo = Logo::first();
-            
+            $data = Cache::remember('site_settings', 3600, function () {
+                $logo = Logo::first();
+                return [
+                    'logo'         => $logo ? $logo->logo : null,
+                    'favicon'      => $logo ? $logo->favicon : null,
+                    'phone_number' => $logo ? $logo->phone_number : null,
+                ];
+            });
+
             return response()->json([
                 'success' => true,
-                'data' => [
-                    'logo' => $logo ? $logo->logo : null,
-                    'favicon' => $logo ? $logo->favicon : null,
-                    'phone_number' => $logo ? $logo->phone_number : null,
-                ]
+                'data'    => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Hero;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class HeroController extends Controller
 {
@@ -66,21 +67,19 @@ class HeroController extends Controller
         }
 
         $hero->save();
+        Cache::forget('active_hero');
 
         return redirect()->route('hero.index')->with('success', 'Hero settings updated successfully!');
     }
 
     public function getActiveHero()
     {
-        $hero = Hero::where('is_active', true)->first();
+        $hero = Cache::remember('active_hero', 600, function () {
+            return Hero::where('is_active', true)->first();
+        });
 
         if (!$hero) {
-            $hero = Hero::create([
-                'title'       => 'Discover Your Perfect Style',
-                'description' => 'Explore our latest collection of premium clothing designed for comfort and style. Find your perfect fit today.',
-                'is_active'   => true,
-                'hero_type'   => 'slider',
-            ]);
+            return response()->json(['status' => 'error', 'message' => 'No active hero found'], 404);
         }
 
         return response()->json([

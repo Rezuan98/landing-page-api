@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\FooterSocial;
+use Illuminate\Support\Facades\Cache;
 
 class FooterSocialApiController extends Controller
 {
@@ -15,16 +16,13 @@ class FooterSocialApiController extends Controller
      */
     public function index()
     {
-        // Get the first record or create it if it doesn't exist
-        $footerSocial = FooterSocial::firstOrCreate(['id' => 1], [
-            'facebook_url' => 'https://facebook.com',
-            'instagram_url' => 'https://instagram.com',
-            'twitter_url' => 'https://twitter.com',
-        ]);
-        
+        $footerSocial = Cache::remember('footer_social', 3600, function () {
+            return FooterSocial::first();
+        });
+
         return response()->json([
             'status' => 'success',
-            'data' => $footerSocial
+            'data'   => $footerSocial,
         ]);
     }
 }

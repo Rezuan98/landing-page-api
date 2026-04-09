@@ -23,8 +23,8 @@ class ProductApiController extends Controller
             ->where('status', 1)
             ->where('featured', 0)
             ->latest()
-            ->get();
-            
+            ->paginate(20);
+
             // Format the data for the frontend
             $formattedProducts = $products->map(function($product) {
                 // Get primary image or the first image if no primary is set
@@ -60,9 +60,15 @@ class ProductApiController extends Controller
             
             return response()->json([
                 'status' => 'success',
-                'data' => $formattedProducts
+                'data'  => $formattedProducts,
+                'meta'  => [
+                    'current_page' => $products->currentPage(),
+                    'last_page'    => $products->lastPage(),
+                    'per_page'     => $products->perPage(),
+                    'total'        => $products->total(),
+                ],
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -141,7 +147,7 @@ class ProductApiController extends Controller
             ->where('featured', 0)
             ->where('new_drop', 1)
             ->latest()
-            ->get();
+            ->paginate(20);
 
             $formattedProducts = $products->map(function($product) {
                 $primaryImage = $product->images->first();
@@ -175,7 +181,13 @@ class ProductApiController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $formattedProducts
+                'data'  => $formattedProducts,
+                'meta'  => [
+                    'current_page' => $products->currentPage(),
+                    'last_page'    => $products->lastPage(),
+                    'per_page'     => $products->perPage(),
+                    'total'        => $products->total(),
+                ],
             ]);
 
         } catch (\Exception $e) {

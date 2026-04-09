@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Slider;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class SliderController extends Controller
 {
@@ -46,6 +47,7 @@ class SliderController extends Controller
                     'order' => $request->order ?? 0,
                 ]);
                 
+                Cache::forget('active_sliders');
                 return redirect()->route('slider.index')->with('success', 'Slider image added successfully!');
             }
         } catch (\Exception $e) {
@@ -68,6 +70,7 @@ class SliderController extends Controller
             // Delete the record
             $slider->delete();
             
+            Cache::forget('active_sliders');
             return redirect()->route('slider.index')->with('success', 'Slider deleted successfully!');
         } catch (\Exception $e) {
             return redirect()->route('slider.index')->with('error', 'An error occurred: ' . $e->getMessage());
