@@ -129,6 +129,64 @@ class ProductApiController extends Controller
     }
     
     /**
+     * Get new drop products (not featured, new_drop = true)
+     */
+    public function getNewDropProducts()
+    {
+        try {
+            $products = Product::with(['brand', 'productSizes.size', 'images' => function($query) {
+                $query->where('is_primary', true);
+            }])
+            ->where('status', 1)
+            ->where('featured', 0)
+            ->where('new_drop', 1)
+            ->latest()
+            ->get();
+
+            $formattedProducts = $products->map(function($product) {
+                $primaryImage = $product->images->first();
+                $imageUrl = $primaryImage ? asset('storage/' . $primaryImage->image_path) : null;
+
+                $sizes = $product->productSizes->map(function($productSize) {
+                    return [
+                        'id' => $productSize->id,
+                        'name' => $productSize->size->size,
+                        'size_id' => $productSize->size->id,
+                        'quantity' => $productSize->quantity
+                    ];
+                });
+
+                $isOnSale = $product->discount_price && $product->discount_price > 0 && $product->discount_price < $product->price;
+
+                return [
+                    'id' => $product->id,
+                    'title' => $product->name,
+                    'brand' => $product->brand->name,
+                    'description' => $product->description,
+                    'price' => $isOnSale ? $product->discount_price : $product->price,
+                    'discount' => $isOnSale ? $product->price : null,
+                    'featured' => (bool) $product->featured,
+                    'new_drop' => (bool) $product->new_drop,
+                    'image' => $imageUrl,
+                    'hoverImage' => $imageUrl,
+                    'sizes' => $sizes
+                ];
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $formattedProducts
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch new drop products: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Search products
      */
     public function searchProducts(Request $request)

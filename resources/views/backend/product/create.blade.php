@@ -56,6 +56,14 @@
                                 </div>
 
                                 <div class="form-group mb-3">
+                                    <label for="new_drop" class="form-label">New Drop</label>
+                                    <select class="form-select" name="new_drop" id="new_drop">
+                                        <option value="0">No</option>
+                                        <option value="1">Yes</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group mb-3">
                                     <label for="status" class="form-label">Status</label>
                                     <select class="form-select" name="status" id="status">
                                         <option value="1">Active</option>

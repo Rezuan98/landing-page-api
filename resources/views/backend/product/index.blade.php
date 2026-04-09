@@ -23,6 +23,7 @@
                                     <th>Stock</th>
                                     <th>Status</th>
                                     <th>Featured</th>
+                                    <th>New Drop</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -56,6 +57,13 @@
                                     <td>
                                         @if($product->featured)
                                         <span class="badge bg-primary">Featured</span>
+                                        @else
+                                        <span class="badge bg-secondary">No</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($product->new_drop)
+                                        <span class="badge bg-warning text-dark">New Drop</span>
                                         @else
                                         <span class="badge bg-secondary">No</span>
                                         @endif

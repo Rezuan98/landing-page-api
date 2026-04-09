@@ -47,6 +47,7 @@ class ProductController extends Controller
             'discount_price' => 'nullable|numeric|min:0',
             'brand_id' => 'required|exists:brands,id',
             'featured' => 'required|boolean',
+            'new_drop' => 'required|boolean',
             'status' => 'required|boolean',
             'product_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'sizes' => 'required|array|min:1',
@@ -55,7 +56,7 @@ class ProductController extends Controller
             'quantities.*' => 'required|integer|min:0',
         ]);
 
-        
+
         // Begin transaction
         DB::beginTransaction();
 
@@ -68,6 +69,7 @@ class ProductController extends Controller
                 'discount_price' => $request->discount_price,
                 'brand_id' => $request->brand_id,
                 'featured' => $request->featured,
+                'new_drop' => $request->new_drop,
                 'status' => $request->status,
             ]);
 
@@ -150,6 +152,7 @@ class ProductController extends Controller
             'discount_price' => 'nullable|numeric|min:0',
             'brand_id' => 'required|exists:brands,id',
             'featured' => 'required|boolean',
+            'new_drop' => 'required|boolean',
             'status' => 'required|boolean',
             'product_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'sizes' => 'required|array|min:1',
@@ -163,7 +166,7 @@ class ProductController extends Controller
 
         try {
             $product = Product::findOrFail($id);
-            
+
             // Update product details
             $product->update([
                 'name' => $request->name,
@@ -172,6 +175,7 @@ class ProductController extends Controller
                 'discount_price' => $request->discount_price,
                 'brand_id' => $request->brand_id,
                 'featured' => $request->featured,
+                'new_drop' => $request->new_drop,
                 'status' => $request->status,
             ]);
 

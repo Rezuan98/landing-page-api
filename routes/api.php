@@ -33,6 +33,7 @@ Route::get('/categories', [ProductController::class, 'getCategories']);
 // fetch products
 Route::get('/products/collections', [ProductApiController::class, 'index']);
 Route::get('/products/featured', [ProductApiController::class, 'getFeaturedProducts']);
+Route::get('/products/new-drops', [ProductApiController::class, 'getNewDropProducts']);
 Route::get('/products/search', [ProductApiController::class, 'searchProducts']);
 Route::post('/check-product-size', [ProductApiController::class, 'checkProductSize']);
 Route::get('/products/{id}', [ProductApiController::class, 'getProduct']);

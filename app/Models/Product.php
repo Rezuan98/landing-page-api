@@ -16,6 +16,7 @@ class Product extends Model
         'discount_price',
         'brand_id',
         'featured',
+        'new_drop',
         'status'
     ];
     
