@@ -73,9 +73,7 @@
                                     </th>
                                     <th>Order ID</th>
                                     <th>Customer</th>
-                                    <th>Product</th>
-                                    <th>Size</th>
-                                    <th>Quantity</th>
+                                    <th>Items</th>
                                     <th>Total</th>
                                     <th>Status</th>
                                     <th>Date</th>
@@ -96,20 +94,13 @@
                                         <small class="text-muted">{{ $order->phone }}</small>
                                     </td>
                                     <td>
-                                        @if($order->product)
-                                        {{ $order->product->name }}
+                                        @if($order->items->count() === 1)
+                                            {{ $order->items->first()->product->name ?? 'N/A' }}
+                                            <span class="text-muted small">({{ $order->items->first()->size->size ?? '' }})</span>
                                         @else
-                                        <span class="text-muted">N/A</span>
+                                            <span>{{ $order->items->count() }} items</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        @if($order->size)
-                                        {{ $order->size->size }}
-                                        @else
-                                        <span class="text-muted">N/A</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $order->quantity }}</td>
                                     <td>${{ $order->total }}</td>
                                     <td>
                                         <div class="dropdown">
@@ -177,7 +168,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="text-center py-4">
+                                    <td colspan="8" class="text-center py-4">
                                         <p class="text-muted mb-0">No orders found</p>
                                     </td>
                                 </tr>

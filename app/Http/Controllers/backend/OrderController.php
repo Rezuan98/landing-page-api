@@ -12,179 +12,106 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::with(['product', 'size'])->latest();
-        
-        // Apply status filter
+        $query = Order::with(['items.product', 'items.size'])->latest();
+
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
-        
-        // Apply date filter
+
         if ($request->has('date') && $request->date != '') {
             $query->whereDate('created_at', $request->date);
         }
-        
+
         $orders = $query->paginate(20);
-        
+
         return view('backend.orders.index', compact('orders'));
     }
 
-    public function store(Request $request)
-    {     
-
-        // $validated = $request->validate([
-        //     'name' => 'required|string|max:255',
-        //     'phone' => 'required|string|max:20',
-            
-        //     'address' => 'required|string',
-        //     'quantity' => 'required|integer|min:1',
-        //     'shipping_option' => 'required|string|in:inside,outside',
-        //     'subtotal' => 'required|numeric|min:0',
-        //     'shipping_cost' => 'required|numeric|min:0',
-        //     'total' => 'required|numeric|min:0',
-        //     'product_id' => 'required|exists:products,id',
-        //     'size_id' => 'required|exists:sizes,id',
-        // ]);
-
-        // Check if there's enough stock for the requested product and size
-        $productSize = ProductSize::where('product_id', $request->product_id)
-            ->where('size_id', $request->size_id)
-            ->first();
-
-        if (!$productSize || $productSize->quantity < $request->quantity) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Not enough stock available for the selected size.',
-            ], 400);
-        }
-
-        // Create the order
-        $order = Order::create([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            
-            'address' => $request->address,
-            'quantity' => $request->quantity,
-            'shipping_option' => $request->shipping_option,
-            'subtotal' => $request->subtotal,
-            'shipping_cost' => $request->shipping_cost,
-            'total' => $request->total,
-            'product_id' => $request->product_id,
-            'size_id' => $request->size_id,
-            'status' => 'pending'
-        ]);
-
-        // Reduce the product inventory
-        $productSize->quantity -= $request->quantity;
-        $productSize->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Order placed successfully!',
-            'order' => $order,
-        ], 201);
-    }
-    
     public function show($id)
     {
-        $order = Order::with(['product', 'size'])->findOrFail($id);
+        $order = Order::with(['items.product.images', 'items.product.brand', 'items.size'])->findOrFail($id);
         return view('backend.orders.show', compact('order'));
     }
 
-    /**
-     * Update the status of an order.
-     */
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
             'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled',
         ]);
-        
-        $order = Order::findOrFail($id);
+
+        $order = Order::with('items')->findOrFail($id);
         $oldStatus = $order->status;
         $newStatus = $request->status;
-        
-        // If order was cancelled and is now something else, restore inventory
-        if ($oldStatus == 'cancelled' && $newStatus != 'cancelled') {
-            $this->updateInventory($order->product_id, $order->size_id, -$order->quantity); // Subtract from inventory
+
+        if ($oldStatus === 'cancelled' && $newStatus !== 'cancelled') {
+            $this->adjustInventoryForOrder($order, -1); // restore: subtract back
         }
-        
-        // If order is being cancelled, add inventory back
-        if ($newStatus == 'cancelled' && $oldStatus != 'cancelled') {
-            $this->updateInventory($order->product_id, $order->size_id, $order->quantity); // Add to inventory
+
+        if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
+            $this->adjustInventoryForOrder($order, 1); // cancel: add back
         }
-        
+
         $order->status = $newStatus;
         $order->save();
-        
+
         return redirect()->back()->with('success', "Order #{$id} status updated to " . ucfirst($newStatus));
     }
-    
-    /**
-     * Update multiple orders' status at once.
-     */
+
     public function bulkStatusUpdate(Request $request)
     {
         $request->validate([
-            'order_ids' => 'required|array|min:1',
+            'order_ids'   => 'required|array|min:1',
             'order_ids.*' => 'required|integer|exists:orders,id',
-            'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled',
+            'status'      => 'required|string|in:pending,processing,shipped,delivered,cancelled',
         ]);
-        
+
         $newStatus = $request->status;
+        $orders = Order::with('items')->whereIn('id', $request->order_ids)->get();
 
-        // Load all orders in a single query instead of one per order
-        $orders = Order::whereIn('id', $request->order_ids)->get();
-
-        $needsInventoryAdjustment = $orders->filter(function ($order) use ($newStatus) {
-            return ($order->status === 'cancelled' && $newStatus !== 'cancelled')
-                || ($newStatus === 'cancelled' && $order->status !== 'cancelled');
-        });
-
-        // Handle inventory adjustments for affected orders
-        foreach ($needsInventoryAdjustment as $order) {
+        foreach ($orders as $order) {
             if ($order->status === 'cancelled' && $newStatus !== 'cancelled') {
-                $this->updateInventory($order->product_id, $order->size_id, -$order->quantity);
-            } else {
-                $this->updateInventory($order->product_id, $order->size_id, $order->quantity);
+                $this->adjustInventoryForOrder($order, -1);
+            } elseif ($newStatus === 'cancelled' && $order->status !== 'cancelled') {
+                $this->adjustInventoryForOrder($order, 1);
             }
         }
 
-        // Batch update all orders in one query
         Order::whereIn('id', $orders->pluck('id'))->update(['status' => $newStatus]);
 
         $count = $orders->count();
 
         return redirect()->back()->with('success', "{$count} orders updated to " . ucfirst($newStatus));
     }
-    
-    /**
-     * Delete an order.
-     */
+
     public function delete($id)
     {
-        $order = Order::findOrFail($id);
-        
-        // If the order status is not cancelled, return inventory
-        if ($order->status != 'cancelled') {
-            $this->updateInventory($order->product_id, $order->size_id, $order->quantity);
+        $order = Order::with('items')->findOrFail($id);
+
+        if ($order->status !== 'cancelled') {
+            $this->adjustInventoryForOrder($order, 1); // add stock back
         }
-        
+
         $order->delete();
-        
+
         return redirect()->route('index.order')->with('success', "Order #{$id} deleted successfully");
     }
 
-
-    private function updateInventory($productId, $sizeId, $quantity)
+    /**
+     * Adjust inventory for every item in an order.
+     * $multiplier = 1  → add quantity back to stock (cancel / delete)
+     * $multiplier = -1 → remove quantity from stock (un-cancel)
+     */
+    private function adjustInventoryForOrder(Order $order, int $multiplier)
     {
-        $productSize = ProductSize::where('product_id', $productId)
-            ->where('size_id', $sizeId)
-            ->first();
-            
-        if ($productSize) {
-            $productSize->quantity += $quantity;
-            $productSize->save();
+        foreach ($order->items as $item) {
+            $productSize = ProductSize::where('product_id', $item->product_id)
+                ->where('size_id', $item->size_id)
+                ->first();
+
+            if ($productSize) {
+                $productSize->quantity += $multiplier * $item->quantity;
+                $productSize->save();
+            }
         }
     }
 }

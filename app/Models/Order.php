@@ -14,30 +14,16 @@ class Order extends Model
         'phone',
         'address',
         'city',
-        'quantity',
         'shipping_option',
         'subtotal',
         'shipping_cost',
         'total',
-        'product_id',
-        'size_id',
         'status'
     ];
-    
-    /**
-     * Get the product that belongs to the order.
-     */
-    public function product()
+
+    public function items()
     {
-        return $this->belongsTo(Product::class);
-    }
-    
-    /**
-     * Get the size that belongs to the order.
-     */
-    public function size()
-    {
-        return $this->belongsTo(Size::class);
+        return $this->hasMany(OrderItem::class);
     }
     
     /**

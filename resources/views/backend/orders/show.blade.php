@@ -134,16 +134,17 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @foreach($order->items as $item)
                                 <tr>
                                     <td>
-                                        @if($order->product)
+                                        @if($item->product)
                                         <div class="d-flex align-items-center">
-                                            @if($order->product->images->where('is_primary', true)->first())
-                                            <img src="{{ asset('storage/' . $order->product->images->where('is_primary', true)->first()->image_path) }}" alt="{{ $order->product->name }}" class="me-2" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                            @if($item->product->images->where('is_primary', true)->first())
+                                            <img src="{{ asset('storage/' . $item->product->images->where('is_primary', true)->first()->image_path) }}" alt="{{ $item->product->name }}" class="me-2" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
                                             @endif
                                             <div>
-                                                <p class="mb-0 fw-medium">{{ $order->product->name }}</p>
-                                                <p class="mb-0 text-muted small">{{ $order->product->brand->name }}</p>
+                                                <p class="mb-0 fw-medium">{{ $item->product->name }}</p>
+                                                <p class="mb-0 text-muted small">{{ $item->product->brand->name }}</p>
                                             </div>
                                         </div>
                                         @else
@@ -151,22 +152,17 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($order->size)
-                                        {{ $order->size->size }}
+                                        @if($item->size)
+                                        {{ $item->size->size }}
                                         @else
                                         <span class="text-muted">N/A</span>
                                         @endif
                                     </td>
-                                    <td>{{ $order->quantity }}</td>
-                                    <td>
-                                        @if($order->product)
-                                        ${{ number_format($order->subtotal / $order->quantity, 2) }}
-                                        @else
-                                        <span class="text-muted">N/A</span>
-                                        @endif
-                                    </td>
-                                    <td>${{ number_format($order->subtotal, 2) }}</td>
+                                    <td>{{ $item->quantity }}</td>
+                                    <td>${{ number_format($item->price, 2) }}</td>
+                                    <td>${{ number_format($item->price * $item->quantity, 2) }}</td>
                                 </tr>
+                                @endforeach
                             </tbody>
                             <tfoot>
                                 <tr>
